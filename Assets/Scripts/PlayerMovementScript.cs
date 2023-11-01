@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using Unity.Netcode;
 
 public class PlayerMovementScript : NetworkBehaviour
 {
+    
     float xDirection = 0.0f;
     float yDirection = 0.0f;
 
