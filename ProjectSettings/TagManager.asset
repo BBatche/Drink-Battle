@@ -9,7 +9,8 @@ TagManager:
   - Epoxy
   - Glasses
   - Bucket
-  - Fake Drink
+  - FakeDrink
+  - FakeDrinkChild
   layers:
   - Default
   - TransparentFX

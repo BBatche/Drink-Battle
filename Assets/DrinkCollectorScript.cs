@@ -17,13 +17,16 @@ public class DrinkCollectorScript : NetworkBehaviour
         public int player2Score;
         public float player1MoveSpeed;
         public float player2MoveSpeed;
+        public bool fakeDrink1;
+        public bool fakeDrink2;
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref player1Score);
             serializer.SerializeValue(ref player2Score);
             serializer.SerializeValue(ref player1MoveSpeed);
             serializer.SerializeValue(ref player2MoveSpeed);
-
+            serializer.SerializeValue(ref fakeDrink1);
+            serializer.SerializeValue(ref fakeDrink2);
         }
     }
     // Start is called before the first frame update
@@ -33,6 +36,9 @@ public class DrinkCollectorScript : NetworkBehaviour
         gameState.player2Score = 0;
         gameState.player1MoveSpeed = 5.0f;
         gameState.player2MoveSpeed = 5.0f;
+        gameState.bucketActive = false;
+        gameState.fakeDrinkActive1= false;
+        gameState.fakeDrinkActive2= false;
     }
 
     // Update is called once per frame
@@ -51,13 +57,11 @@ public class DrinkCollectorScript : NetworkBehaviour
     {
         if (collision.gameObject.tag == "Player")
         {
-            Debug.Log("Player Hit");
+
             if (gameState.bucketActive)
             {
                 gameState.bucketActive = false;
-                Debug.Log("P1-" + gameState.player1Score);
-                Debug.Log("P2-" + gameState.player2Score);
-                Debug.Log("Player Hit and Bucket Active");
+
                 RequestStealPointsServerRpc();
             }
 
@@ -82,6 +86,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         {
             player1Score = gameState.player1Score,
             player2Score = gameState.player2Score,
+            
         };
 
         RequestDestroyDrinkClientRpc(tag, scoreData);
@@ -149,8 +154,6 @@ public class DrinkCollectorScript : NetworkBehaviour
         if (playerNum == 0)
         {
             RequestUpdateSpeedClientRpc(0);
-            
-            Debug.Log("Player 2 Move Speed" + gameState.player2MoveSpeed);
             yield return new WaitForSeconds(waitTime);
             RequestUpdateSpeedClientRpc(2);
             
@@ -158,7 +161,6 @@ public class DrinkCollectorScript : NetworkBehaviour
         else
         {
             RequestUpdateSpeedClientRpc(1);
-            Debug.Log("Player 1 Move Speed" + gameState.player1MoveSpeed);
             yield return new WaitForSeconds(waitTime);
             RequestUpdateSpeedClientRpc(2);
             
@@ -175,7 +177,7 @@ public class DrinkCollectorScript : NetworkBehaviour
     [ClientRpc]
     void RequestDestroyBucketClientRpc(string tag)
     {
-        Debug.Log("Destroying:" + tag);
+        
         GameObject temp;
         temp = GameObject.Find(tag);
         Destroy(temp);
@@ -193,7 +195,6 @@ public class DrinkCollectorScript : NetworkBehaviour
     void RequestStealPointsServerRpc(ServerRpcParams serverRpcParams = default)
     {
         ulong playerNum = serverRpcParams.Receive.SenderClientId;
-        Debug.Log("Player" + playerNum + "Stealing points");
         if (playerNum == 0)
         {
 
@@ -207,9 +208,6 @@ public class DrinkCollectorScript : NetworkBehaviour
             gameState.player1Score = gameState.player1Score/2;
             gameState.bucketActive = false;
         }
-
-        Debug.Log("P1Score- " + gameState.player1Score);
-        Debug.Log("P2Score- " + gameState.player2Score);
         PlayerNetworkData scoreData = new PlayerNetworkData()
         {
             player1Score = gameState.player1Score,
@@ -227,6 +225,39 @@ public class DrinkCollectorScript : NetworkBehaviour
         this.gameState.player2Score = scoreData.player2Score;
     }
 
+
+        
+    
+
+    [ClientRpc]
+    void RequestDestroyFakeDrinkClientRpc(string tag, PlayerNetworkData boolData)
+    {
+
+        GameObject temp;
+        temp = GameObject.Find(tag);
+        Destroy(temp);
+
+        this.gameState.fakeDrinkActive1 = boolData.fakeDrink1;
+        this.gameState.fakeDrinkActive2 = boolData.fakeDrink2;
+    }
+
+
+    [ServerRpc(RequireOwnership = false)]
+    void RequestCollectFakeDrinkChildServerRpc(string tag, ServerRpcParams serverRpcParams = default)
+    {
+        RequestDestroyFakeDrinkChildClientRpc(tag);
+    }
+
+    [ClientRpc]
+    void RequestDestroyFakeDrinkChildClientRpc(string tag)
+    {
+
+        GameObject temp;
+        temp = GameObject.Find(tag);
+        Destroy(temp);
+
+
+    }
     private void OnTriggerEnter2D(Collider2D collision)
         {
         if(collision.gameObject.tag == "Drink")
@@ -241,7 +272,6 @@ public class DrinkCollectorScript : NetworkBehaviour
         }
         if(collision.gameObject.tag == "Bucket")
         {
-            Debug.Log("Collided with Bucket-" + collision.gameObject.name);
             gameState.bucketActive = true;
             RequestCollectBucketServerRpc(collision.gameObject.name);
         }
@@ -250,5 +280,33 @@ public class DrinkCollectorScript : NetworkBehaviour
         {
 
         }
+
+        if(collision.gameObject.tag == "FakeDrink")
+        {
+            SetDecoyStatusServerRpc(collision.gameObject.name);
+        }
+        
+
+        if(collision.gameObject.tag == "FakeDrinkChild")
+        {
+            RequestCollectFakeDrinkChildServerRpc(collision.gameObject.name);
+        }
+    }
+    [ServerRpc(RequireOwnership = false)]
+    void SetDecoyStatusServerRpc(string name,ServerRpcParams serverRpcParams = default)
+    {
+        ulong playerNum = serverRpcParams.Receive.SenderClientId;
+        if (playerNum == 0)
+        {
+            gameState.fakeDrinkActive1 = true;
+        }
+        else gameState.fakeDrinkActive2 = true;
+
+        PlayerNetworkData boolData = new PlayerNetworkData()
+        {
+            fakeDrink1 = gameState.fakeDrinkActive1,
+            fakeDrink2 = gameState.fakeDrinkActive2,
+        };
+        RequestDestroyFakeDrinkClientRpc(name, boolData);
     }
 }

@@ -2,20 +2,23 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 
 public class PlayerMovementScript : NetworkBehaviour
 {
     public GameState gameState;
+    public NetSpawnerScript ns;
     float xDirection = 0.0f;
     float yDirection = 0.0f;
+    Vector3 playerPosition;
 
     float moveSpeed;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        ns = FindObjectOfType<NetSpawnerScript>();
     }
 
     // Update is called once per frame
@@ -24,24 +27,34 @@ public class PlayerMovementScript : NetworkBehaviour
         if (IsServer)
         {
             moveSpeed = gameState.player1MoveSpeed;
-            Debug.Log("P1 MS - " + moveSpeed);
             xDirection = Input.GetAxisRaw("Horizontal");
             yDirection = Input.GetAxisRaw("Vertical");
 
             Vector3 move = new Vector3(xDirection, yDirection, 0);
 
             transform.Translate(move * Time.deltaTime * moveSpeed);
+            playerPosition = new Vector3(transform.position.x +2.0f, transform.position.y+1.0f, 0);
+            if (gameState.fakeDrinkActive1 && Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                Debug.Log("Server Fake Drink Child");
+                ns.RequestSpawnFakeDrinkChildServerRpc(playerPosition);
+            }
         }
         else
         {
             moveSpeed = gameState.player2MoveSpeed;
-            Debug.Log("P2 MS - " + moveSpeed);
             xDirection = Input.GetAxisRaw("Horizontal");
             yDirection = Input.GetAxisRaw("Vertical");
 
             Vector3 move = new Vector3(xDirection, yDirection, 0);
 
             transform.Translate(move * Time.deltaTime * moveSpeed);
+            playerPosition = new Vector3 (transform.position.x+2.0f, transform.position.y+1.0f, 0); 
+            if (gameState.fakeDrinkActive2 && Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                Debug.Log("Client Fake Drink Child");
+                ns.RequestSpawnFakeDrinkChildServerRpc(playerPosition);
+            }
         }
     }
 
@@ -53,16 +66,4 @@ public class PlayerMovementScript : NetworkBehaviour
             enabled = false;
         }
     }
-
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        
-    }
-
-
 }

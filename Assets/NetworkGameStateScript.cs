@@ -7,6 +7,7 @@ using Unity.Netcode;
 public class GameState : ScriptableObject
 {
     public int player1Score = 0;
+
     public int player2Score = 0;
 
     public float player1MoveSpeed = 5.0f;
@@ -15,7 +16,10 @@ public class GameState : ScriptableObject
 
     public bool bucketActive = false;
 
+    public bool fakeDrinkActive1 = false;
 
-    
+    public bool fakeDrinkActive2 = false;
+
+
 
 }

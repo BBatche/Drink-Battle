@@ -192,7 +192,10 @@ MonoBehaviour:
   epoxyPrefab: {fileID: 1450315614971069909, guid: 49f09ed87c7595c45952343518610245, type: 3}
   trollPrefab: {fileID: 5133336737134874380, guid: 0cd9d941ef0af294498605bc9dd0a465, type: 3}
   bucketPrefab: {fileID: 1840351910564913901, guid: 20de060a513184544b2885f73d3bac59, type: 3}
+  fakeDrinkPrefab: {fileID: 5297779911258328748, guid: 088b99627fe2dca42aff769595507e90, type: 3}
+  fakeDrinkChildPrefab: {fileID: 3377206584976729794, guid: 40638b78d4a2fa545a843aeee007819f, type: 3}
   nm: {fileID: 775653831}
+  gameState: {fileID: 11400000, guid: 7312e59f11a3dbd48978f4ecaab7c1ae, type: 2}
 --- !u!1 &166347237
 GameObject:
   m_ObjectHideFlags: 0
