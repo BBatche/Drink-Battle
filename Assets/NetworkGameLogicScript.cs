@@ -5,6 +5,8 @@ using Unity.Netcode;
 
 public class NetworkGameLogicScript : NetworkBehaviour
 {
+    
+    
     // Start is called before the first frame update
     void Start()
     {
