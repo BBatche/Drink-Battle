@@ -12,10 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7531c5d3997c7484fb5c4db36091b58c, type: 3}
   m_Name: gameState
   m_EditorClassIdentifier: 
-  player1Score: 3
-  player2Score: 0
+  player1Score: 25
+  player2Score: 1
   player1MoveSpeed: 5
   player2MoveSpeed: 5
-  bucketActive: 0
-  fakeDrinkActive1: 0
+  bucketActive: 1
+  fakeDrinkActive1: 1
   fakeDrinkActive2: 0
+  player1cam: -21
+  player2cam: -21
+  trollActive1: 0
+  trollActive2: 0
+  trollingPlayer1: 0
+  trollingPlayer2: 0

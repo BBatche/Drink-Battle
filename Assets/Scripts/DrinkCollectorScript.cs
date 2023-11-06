@@ -4,11 +4,13 @@ using UnityEngine;
 using Unity.Netcode;
 using TMPro;
 using System;
+using static UnityEditor.PlayerSettings;
 
 public class DrinkCollectorScript : NetworkBehaviour
 {
     public GameState gameState;
     NetworkManager nm;
+    NetSpawnerScript ns;
     
 
     struct PlayerNetworkData : INetworkSerializable
@@ -56,6 +58,9 @@ public class DrinkCollectorScript : NetworkBehaviour
         gameState.player2cam = -21.0f;
         gameState.trollActive1 = false;
         gameState.trollActive2 = false;
+        gameState.trollingPlayer1 = false;
+        gameState.trollingPlayer2 = false;
+        ns = FindObjectOfType<NetSpawnerScript>();
     }
 
     // Update is called once per frame
@@ -64,7 +69,7 @@ public class DrinkCollectorScript : NetworkBehaviour
 
 
     }
-
+    
     private void OnCollisionEnter2D(Collision2D collision)
     {
 
@@ -80,36 +85,42 @@ public class DrinkCollectorScript : NetworkBehaviour
                 gameState.bucketActive = false;
 
                 RequestStealPointsServerRpc();
+                
             }
 
         }
     }
     [ServerRpc(RequireOwnership = false)]
-    private void RequestCollectDrinkServerRpc(string tag, ServerRpcParams serverRpcParams = default)
+    private void RequestCollectDrinkServerRpc(string tag, Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
         //Server can refer to master list in spawner to see if tag and location are valid
         //Client could pass in location of Drink
-
+        bool drinkFound = ns.searchDrinkList(tag, pos);
         ulong playerNum = serverRpcParams.Receive.SenderClientId;
-
-        if (playerNum == 0)
+        if (drinkFound == false) 
         {
-            gameState.player1Score += 1;
-            Debug.Log(gameState.player1Score);
+            Debug.Log("CHEATER CHEATER CHEATER CHEATER");
         }
-        else { gameState.player2Score += 1; }
-
-        PlayerNetworkData scoreData = new PlayerNetworkData()
+        else 
         {
-            player1Score = gameState.player1Score,
-            player2Score = gameState.player2Score,
+            ns.removeDrinkfromList(tag);
+            if (playerNum == 0)
+            {
+                gameState.player1Score += 1;
+                Debug.Log(gameState.player1Score);
+            }
+            else { gameState.player2Score += 1; }
+
+            PlayerNetworkData scoreData = new PlayerNetworkData()
+            {
+                player1Score = gameState.player1Score,
+                player2Score = gameState.player2Score,
+
+            };
+
             
-        };
-
-        RequestDestroyDrinkClientRpc(tag, scoreData);
-
-
-        //else ban cheater
+            RequestDestroyDrinkClientRpc(tag, scoreData);
+        }
 
     }
 
@@ -129,14 +140,21 @@ public class DrinkCollectorScript : NetworkBehaviour
 
     //contact server to validate collecting Epoxy
     [ServerRpc(RequireOwnership = false)]
-    void RequestCollectEpoxyServerRpc(string tag, ServerRpcParams serverRpcParams = default)
+    void RequestCollectEpoxyServerRpc(string tag, Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
-
+        bool epoxyFound = ns.searchEpoxyList(tag, pos);
         ulong playerNum = serverRpcParams.Receive.SenderClientId;
+        if (epoxyFound == false)
+        {
+            Debug.Log("CHEATER CHEATER CHEATER CHEATER");
+        }
+        else
+        {
+            ns.removeEpoxyfromList(tag);
+            StartCoroutine(EpoxySlowTimer(10.0f, playerNum));
 
-        StartCoroutine(EpoxySlowTimer(10.0f, playerNum));
-
-        RequestDestroyEpoxyClientRpc(tag);
+            RequestDestroyEpoxyClientRpc(tag);
+        }
     }
     [ClientRpc]
     void RequestDestroyEpoxyClientRpc(string name)
@@ -186,9 +204,18 @@ public class DrinkCollectorScript : NetworkBehaviour
 
     }
     [ServerRpc(RequireOwnership = false)]
-    void RequestCollectBucketServerRpc(string tag, ServerRpcParams serverRpcParams = default)
+    void RequestCollectBucketServerRpc(string tag, Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
-        RequestDestroyBucketClientRpc(tag);
+        bool bucketFound = ns.searchBucketList(tag, pos);
+        if (bucketFound == false)
+        {
+            Debug.Log("CHEATER CHEATER CHEATER CHEATER");
+        }
+        else
+        {
+            ns.removeBucketfromList(tag);
+            RequestDestroyBucketClientRpc(tag);
+        }
     }
 
     [ClientRpc]
@@ -244,21 +271,30 @@ public class DrinkCollectorScript : NetworkBehaviour
 
 
     [ServerRpc(RequireOwnership = false)]
-    void SetDecoyStatusServerRpc(string name, ServerRpcParams serverRpcParams = default)
+    void SetDecoyStatusServerRpc(string name, Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
         ulong playerNum = serverRpcParams.Receive.SenderClientId;
-        if (playerNum == 0)
+        bool fakeDrinkFound = ns.searchFakeDrinkList(name, pos);
+        if (fakeDrinkFound== false)
         {
-            gameState.fakeDrinkActive1 = true;
+            Debug.Log("CHEATER CHEATER CHEATER CHEATER");
         }
-        else gameState.fakeDrinkActive2 = true;
-
-        PlayerNetworkData boolData = new PlayerNetworkData()
+        else
         {
-            fakeDrink1 = gameState.fakeDrinkActive1,
-            fakeDrink2 = gameState.fakeDrinkActive2,
-        };
-        RequestDestroyFakeDrinkClientRpc(name, boolData);
+            ns.removeFakeDrinkfromList(name);
+            if (playerNum == 0)
+            {
+                gameState.fakeDrinkActive1 = true;
+            }
+            else gameState.fakeDrinkActive2 = true;
+
+            PlayerNetworkData boolData = new PlayerNetworkData()
+            {
+                fakeDrink1 = gameState.fakeDrinkActive1,
+                fakeDrink2 = gameState.fakeDrinkActive2,
+            };
+            RequestDestroyFakeDrinkClientRpc(name, boolData);
+        }
     }
 
 
@@ -293,17 +329,25 @@ public class DrinkCollectorScript : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void RequestCollectGlassesServerRpc(string name, ServerRpcParams serverRpcParams = default)
+    void RequestCollectGlassesServerRpc(string name, Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
         ulong playerNum = serverRpcParams.Receive.SenderClientId;
-
-        if (playerNum == 0)
+        bool glassesFound = ns.searchGlassesList(name, pos);
+        if (glassesFound == false)
         {
-            StartCoroutine(GlassesZoomTimer(10.0f, 0));
+            Debug.Log("CHEATER CHEATER CHEATER CHEATER");
         }
-        else StartCoroutine(GlassesZoomTimer(10.0f, 1));
+        else
+        {
+            ns.removeGlassesfromList(name);
+            if (playerNum == 0)
+            {
+                StartCoroutine(GlassesZoomTimer(10.0f, 0));
+            }
+            else StartCoroutine(GlassesZoomTimer(10.0f, 1));
 
-        RequestDestroyGlassesClientRpc(name);
+            RequestDestroyGlassesClientRpc(name);
+        }
     }
     [ClientRpc]
     void RequestDestroyGlassesClientRpc(string tag)
@@ -349,14 +393,21 @@ public class DrinkCollectorScript : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    void SetTrollStatusServerRpc(string name, ServerRpcParams serverRpcParams = default)
+    void SetTrollStatusServerRpc(string name,Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
         ulong playerNum = serverRpcParams.Receive.SenderClientId;
+        bool trollFound = ns.searchTrollList(name, pos);
+        if (trollFound == false)
+        {
+            Debug.Log("CHEATER CHEATER CHEATER CHEATER");
+        }
+        else
+        {
+            ns.removeTrollfromList(name);
+            StartCoroutine(TrollActiveTimer(10.0f, playerNum));
 
-
-        StartCoroutine(TrollActiveTimer(10.0f, playerNum));
-
-        RequestDestroyTrollClientRpc(name);
+            RequestDestroyTrollClientRpc(name);
+        }
     }
 
     [ClientRpc]
@@ -412,27 +463,31 @@ public class DrinkCollectorScript : NetworkBehaviour
         {
         if(collision.gameObject.tag == "Drink")
         {
-            
-            RequestCollectDrinkServerRpc(collision.gameObject.name);
+            Vector3 pos = new Vector3(collision.gameObject.transform.position.x, collision.gameObject.transform.position.y, collision.gameObject.transform.position.z);
+            RequestCollectDrinkServerRpc(collision.gameObject.name, pos);
         }
         if(collision.gameObject.tag == "Epoxy")
         {
-            RequestCollectEpoxyServerRpc(collision.gameObject.name);
+            Vector3 pos = new Vector3(collision.gameObject.transform.position.x, collision.gameObject.transform.position.y, collision.gameObject.transform.position.z);
+            RequestCollectEpoxyServerRpc(collision.gameObject.name, pos);
             
         }
         if(collision.gameObject.tag == "Bucket")
         {
+            Vector3 pos = new Vector3(collision.gameObject.transform.position.x, collision.gameObject.transform.position.y, collision.gameObject.transform.position.z);
             gameState.bucketActive = true;
-            RequestCollectBucketServerRpc(collision.gameObject.name);
+            RequestCollectBucketServerRpc(collision.gameObject.name, pos);
         }
         
         if (collision.gameObject.tag == "Troll")
         {
-            SetTrollStatusServerRpc(collision.gameObject.name);
+            Vector3 pos = new Vector3(collision.gameObject.transform.position.x, collision.gameObject.transform.position.y, collision.gameObject.transform.position.z);
+            SetTrollStatusServerRpc(collision.gameObject.name, pos);
         }
         if (collision.gameObject.tag == "FakeDrink")
         {
-            SetDecoyStatusServerRpc(collision.gameObject.name);
+            Vector3 pos = new Vector3(collision.gameObject.transform.position.x, collision.gameObject.transform.position.y, collision.gameObject.transform.position.z);
+            SetDecoyStatusServerRpc(collision.gameObject.name, pos);
         }
 
 
@@ -444,7 +499,8 @@ public class DrinkCollectorScript : NetworkBehaviour
 
         if (collision.gameObject.tag == "Glasses")
         {
-            RequestCollectGlassesServerRpc(collision.gameObject.name);
+            Vector3 pos = new Vector3(collision.gameObject.transform.position.x, collision.gameObject.transform.position.y, collision.gameObject.transform.position.z);
+            RequestCollectGlassesServerRpc(collision.gameObject.name, pos);
         }
         if (collision.gameObject.tag == "FakeCollider")
         {

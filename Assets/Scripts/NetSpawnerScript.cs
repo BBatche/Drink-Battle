@@ -18,19 +18,72 @@ public class NetSpawnerScript : NetworkBehaviour
     public GameState gameState;
 
     public List<Drink> drinkList = new();
-
+    public List<Bucket> bucketList = new();
+    public List<Epoxy> epoxyList = new();
+    public List<Troll> trollList = new();
+    public List<Glasses> glassesList = new();
+    public List<FakeDrink> fakeDrinkList = new();
     public struct Drink
     {
         public string name;
         public Vector3 pos;
-
         public Drink(string name, Vector3 pos)
         {
             this.name = name;
             this.pos = pos;
         }
     }
+    public struct Epoxy
+    {
+        public string name;
+        public Vector3 pos;
+        public Epoxy(string name, Vector3 pos)
+        {
+            this.name = name;
+            this.pos = pos;
+        }
+    }
+    public struct Troll
+    {
+        public string name;
+        public Vector3 pos;
+        public Troll(string name, Vector3 pos)
+        {
+            this.name = name;
+            this.pos = pos;
+        }
+    }
+    public struct FakeDrink
+    {
+        public string name;
+        public Vector3 pos;
+        public FakeDrink(string name, Vector3 pos)
+        {
+            this.name = name;
+            this.pos = pos;
+        }
+    }
+    public struct Glasses
+    {
+        public string name;
+        public Vector3 pos;
+        public Glasses(string name, Vector3 pos)
+        {
+            this.name = name;
+            this.pos = pos;
+        }
+    }
 
+    public struct Bucket
+    {
+        public string name;
+        public Vector3 pos;
+        public Bucket(string name, Vector3 pos)
+        {
+            this.name = name;
+            this.pos = pos;
+        }
+    }
     private bool gameStarted = false;
 
 
@@ -201,10 +254,10 @@ public class NetSpawnerScript : NetworkBehaviour
     //Drink Spawning
     void SpawnDrink(Vector3 pos, string name)
     {
-        Drink drinky = new Drink(name, pos);
-        drinkList.Add(drinky);
         drinkPrefab.name = name;
         var drink = Instantiate(drinkPrefab, pos, Quaternion.identity);
+        Drink drinky = new Drink(name, pos);
+        drinkList.Add(drinky);
     }
 
     [ClientRpc]
@@ -217,6 +270,8 @@ public class NetSpawnerScript : NetworkBehaviour
     {
         epoxyPrefab.name = name;
         var epoxy = Instantiate(epoxyPrefab, pos, Quaternion.identity);
+        Epoxy epoxyy = new Epoxy(name, pos);
+        epoxyList.Add(epoxyy);
     }
 
     [ClientRpc]
@@ -229,6 +284,8 @@ public class NetSpawnerScript : NetworkBehaviour
     {
         bucketPrefab.name = name;
         var bucket = Instantiate(bucketPrefab, pos, Quaternion.identity);
+        Bucket buckett = new Bucket(name, pos);
+        bucketList.Add(buckett);
     }
 
     [ClientRpc]
@@ -241,6 +298,8 @@ public class NetSpawnerScript : NetworkBehaviour
     {
         fakeDrinkPrefab.name = name;
         var fakeDrink = Instantiate(fakeDrinkPrefab, pos, Quaternion.identity);
+        FakeDrink fakeDrinkk = new FakeDrink(name, pos);
+        fakeDrinkList.Add(fakeDrinkk);
     }
 
     [ClientRpc]
@@ -259,6 +318,8 @@ public class NetSpawnerScript : NetworkBehaviour
     {
         glassesPrefab.name = name;
         var glasses = Instantiate(glassesPrefab, pos, Quaternion.identity);
+        Glasses glassess = new Glasses(name, pos);
+        glassesList.Add(glassess);
     }
 
     [ClientRpc]
@@ -271,6 +332,8 @@ public class NetSpawnerScript : NetworkBehaviour
     {
         trollPrefab.name = name;
         var troll = Instantiate(trollPrefab, pos, Quaternion.identity);
+        Troll trolll = new Troll(name, pos);
+        trollList.Add(trolll);
     }
 
     [ClientRpc]
@@ -307,5 +370,170 @@ public class NetSpawnerScript : NetworkBehaviour
         Instantiate(fakeDrinkChildPrefab, pos, Quaternion.identity);
         this.gameState.fakeDrinkActive1 = boolData.fakeDrink1;
         this.gameState.fakeDrinkActive2 = boolData.fakeDrink2;
+    }
+
+    public bool searchDrinkList(string name, Vector3 pos)
+    {
+        name = name.Replace("(Clone)", "");
+        foreach(Drink drink in drinkList)
+        {
+            if(drink.name == name && drink.pos == pos)
+            {
+                Debug.Log("Drink Found");
+                return true;
+                
+            }
+            
+        }
+        return false;
+    }
+    public void removeDrinkfromList(string name)
+    {   
+        foreach(Drink drink in drinkList)
+        {
+            if (drink.name == name)
+            {
+                drinkList.Remove(drink);
+                Debug.Log("Drink Removed");
+            }
+        }
+        
+    }
+    public bool searchEpoxyList(string name, Vector3 pos)
+    {
+        name = name.Replace("(Clone)", "");
+        foreach (Epoxy epoxy in epoxyList)
+        {
+            if (epoxy.name == name && epoxy.pos == pos)
+            {
+                Debug.Log("Epoxy Found");
+                return true;
+
+            }
+
+        }
+        return false;
+    }
+    public void removeEpoxyfromList(string name)
+    {
+        foreach (Epoxy epoxy in epoxyList)
+        {
+            if (epoxy.name == name)
+            {
+                epoxyList.Remove(epoxy);
+                Debug.Log("Epoxy Removed");
+            }
+        }
+
+    }
+
+    public bool searchBucketList(string name, Vector3 pos)
+    {
+        name = name.Replace("(Clone)", "");
+        foreach (Bucket bucket in bucketList)
+        {
+            if (bucket.name == name && bucket.pos == pos)
+            {
+                Debug.Log("Bucket Found");
+                return true;
+
+            }
+
+        }
+        return false;
+    }
+    public void removeBucketfromList(string name)
+    {
+        foreach (Bucket bucket in bucketList)
+        {
+            if (bucket.name == name)
+            {
+                bucketList.Remove(bucket);
+                Debug.Log("Bucket Removed");
+            }
+        }
+
+    }
+
+    public bool searchFakeDrinkList(string name, Vector3 pos)
+    {
+        name = name.Replace("(Clone)", "");
+        foreach (FakeDrink fakeDrink in fakeDrinkList)
+        {
+            if (fakeDrink.name == name && fakeDrink.pos == pos)
+            {
+                Debug.Log("Fake Drink Found");
+                return true;
+
+            }
+
+        }
+        return false;
+    }
+    public void removeFakeDrinkfromList(string name)
+    {
+        foreach (FakeDrink fakeDrink in fakeDrinkList)
+        {
+            if (fakeDrink.name == name)
+            {
+                fakeDrinkList.Remove(fakeDrink);
+                Debug.Log("Fake Drink Removed");
+            }
+        }
+
+    }
+    public bool searchGlassesList(string name, Vector3 pos)
+    {
+        name = name.Replace("(Clone)", "");
+        foreach (Glasses glasses in glassesList)
+        {
+            if (glasses.name == name && glasses.pos == pos)
+            {
+                Debug.Log("Glasses Found");
+                return true;
+
+            }
+
+        }
+        return false;
+    }
+    public void removeGlassesfromList(string name)
+    {
+        foreach (Glasses glasses in glassesList)
+        {
+            if (glasses.name == name)
+            {
+                glassesList.Remove(glasses);
+                Debug.Log("Glasses Removed");
+            }
+        }
+
+    }
+    public bool searchTrollList(string name, Vector3 pos)
+    {
+        name = name.Replace("(Clone)", "");
+        foreach (Troll troll in trollList)
+        {
+            if (troll.name == name && troll.pos == pos)
+            {
+                Debug.Log("Troll Found");
+                return true;
+
+            }
+
+        }
+        return false;
+    }
+    public void removeTrollfromList(string name)
+    {
+        foreach (Troll troll in trollList)
+        {
+            if (troll.name == name)
+            {
+                trollList.Remove(troll);
+                Debug.Log("Epoxy Removed");
+            }
+        }
+
     }
 }

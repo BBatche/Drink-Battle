@@ -11,6 +11,7 @@ TagManager:
   - Bucket
   - FakeDrink
   - FakeDrinkChild
+  - FakeCollider
   layers:
   - Default
   - TransparentFX
