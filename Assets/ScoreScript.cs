@@ -17,5 +17,6 @@ public class ScoreScript : MonoBehaviour
     void Update()
     {
         score.text ="Player 1: " + gameState.player1Score + "\t Player 2: " + gameState.player2Score;
+  
     }
 }
