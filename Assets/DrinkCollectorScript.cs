@@ -9,7 +9,7 @@ public class DrinkCollectorScript : NetworkBehaviour
 {
     public GameState gameState;
     NetworkManager nm;
-
+    
 
     struct PlayerNetworkData : INetworkSerializable
     {
@@ -21,6 +21,10 @@ public class DrinkCollectorScript : NetworkBehaviour
         public bool fakeDrink2;
         public float player1camDist;
         public float player2camDist;
+        public bool troll1;
+        public bool troll2;
+        public bool trollingP1;
+        public bool trollingP2;
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref player1Score);
@@ -31,6 +35,11 @@ public class DrinkCollectorScript : NetworkBehaviour
             serializer.SerializeValue(ref fakeDrink2);
             serializer.SerializeValue(ref player1camDist);
             serializer.SerializeValue(ref player2camDist);
+            serializer.SerializeValue(ref troll1);
+            serializer.SerializeValue(ref troll2);
+            serializer.SerializeValue(ref trollingP1);
+            serializer.SerializeValue(ref trollingP2);
+
         }
     }
     // Start is called before the first frame update
@@ -45,6 +54,8 @@ public class DrinkCollectorScript : NetworkBehaviour
         gameState.fakeDrinkActive2= false;
         gameState.player1cam = -21.0f;
         gameState.player2cam = -21.0f;
+        gameState.trollActive1 = false;
+        gameState.trollActive2 = false;
     }
 
     // Update is called once per frame
@@ -336,6 +347,67 @@ public class DrinkCollectorScript : NetworkBehaviour
             RequestUpdateCamDistClientRpc(2);
         }
     }
+
+    [ServerRpc(RequireOwnership = false)]
+    void SetTrollStatusServerRpc(string name, ServerRpcParams serverRpcParams = default)
+    {
+        ulong playerNum = serverRpcParams.Receive.SenderClientId;
+
+
+        StartCoroutine(TrollActiveTimer(10.0f, playerNum));
+
+        RequestDestroyTrollClientRpc(name);
+    }
+
+    [ClientRpc]
+    void RequestDestroyTrollClientRpc(string name)
+    {
+        GameObject temp;
+        temp = GameObject.Find(name);
+        Destroy(temp);
+    }
+    [ClientRpc]
+    void RequestUpdateTrollClientRpc(ulong playerNum)
+    {
+        if (playerNum == 0)
+        {
+            gameState.trollActive1 = true;
+            gameState.trollingPlayer2 = true;
+        }
+        else if (playerNum == 1)
+        {
+            gameState.trollActive2 = true;
+            gameState.trollingPlayer1 = true;
+        }
+        else if (playerNum == 2)
+        {
+            gameState.trollActive1 = false;
+            gameState.trollActive2 = false;
+            gameState.trollingPlayer1 = false;
+            gameState.trollingPlayer2 = false;
+        }
+
+
+    }
+    IEnumerator TrollActiveTimer(float waitTime, ulong playerNum)
+    {
+        if (playerNum == 0)
+        {
+            RequestUpdateTrollClientRpc(0);
+            yield return new WaitForSeconds(waitTime);
+            RequestUpdateTrollClientRpc(2);
+
+        }
+        else
+        {
+            RequestUpdateTrollClientRpc(1);
+            yield return new WaitForSeconds(waitTime);
+            RequestUpdateTrollClientRpc(2);
+
+        }
+
+
+    }
     private void OnTriggerEnter2D(Collider2D collision)
         {
         if(collision.gameObject.tag == "Drink")
@@ -356,24 +428,61 @@ public class DrinkCollectorScript : NetworkBehaviour
         
         if (collision.gameObject.tag == "Troll")
         {
-
+            SetTrollStatusServerRpc(collision.gameObject.name);
         }
-
-        if(collision.gameObject.tag == "FakeDrink")
+        if (collision.gameObject.tag == "FakeDrink")
         {
             SetDecoyStatusServerRpc(collision.gameObject.name);
         }
-        
 
-        if(collision.gameObject.tag == "FakeDrinkChild")
+
+
+        if (collision.gameObject.tag == "FakeDrinkChild")
         {
             RequestCollectFakeDrinkChildServerRpc(collision.gameObject.name);
         }
 
-        if(collision.gameObject.tag == "Glasses")
+        if (collision.gameObject.tag == "Glasses")
         {
             RequestCollectGlassesServerRpc(collision.gameObject.name);
         }
+        if (collision.gameObject.tag == "FakeCollider")
+        {
+            string parentName = collision.transform.parent.gameObject.name;
+            RequestCheckTrollingServerRpc(parentName);
+        }
+        
     }
-    
+
+    [ServerRpc(RequireOwnership = false)]
+    void RequestCheckTrollingServerRpc(string name, ServerRpcParams serverRpcParams = default)
+    {
+        ulong playerNum = serverRpcParams.Receive.SenderClientId;
+
+        if(playerNum == 0)
+        {
+            if (gameState.trollingPlayer1)
+            {
+                RequestDestroyDrinkEarlyClientRpc(name, playerNum);
+            }
+        }
+        if(playerNum == 1)
+        {
+            if (gameState.trollingPlayer2)
+            {
+                RequestDestroyDrinkEarlyClientRpc(name, playerNum);
+            }
+        }
+    }
+
+    [ClientRpc]
+    void RequestDestroyDrinkEarlyClientRpc(string name , ulong playerNum)
+    {
+        GameObject parent;
+        
+        
+        parent = GameObject.Find(name);
+        Destroy(parent);
+        
+    }
 }

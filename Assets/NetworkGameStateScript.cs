@@ -25,5 +25,14 @@ public class GameState : ScriptableObject
 
     public float player2cam = -21.0f;
 
+    public bool trollActive1 = false;
+
+    public bool trollActive2 = false;
+
+    public bool trollingPlayer1 = false;
+
+    public bool trollingPlayer2 = false;
+
+
 
 }

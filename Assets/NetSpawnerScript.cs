@@ -16,7 +16,20 @@ public class NetSpawnerScript : NetworkBehaviour
     public GameObject glassesPrefab;
     public NetworkManager nm;
     public GameState gameState;
-    
+
+    public List<Drink> drinkList = new();
+
+    public struct Drink
+    {
+        public string name;
+        public Vector3 pos;
+
+        public Drink(string name, Vector3 pos)
+        {
+            this.name = name;
+            this.pos = pos;
+        }
+    }
 
     private bool gameStarted = false;
 
@@ -51,6 +64,7 @@ public class NetSpawnerScript : NetworkBehaviour
                 float y = Random.Range(-4.5f, 4.5f);
                 Vector3 position = new Vector3(x, y, 0.0f);
                 string name = "Drink-" + System.Guid.NewGuid().ToString();
+                
                 RequestSpawnDrinksClientRpc(position, name);
             }
 
@@ -122,6 +136,22 @@ public class NetSpawnerScript : NetworkBehaviour
 
         }
     }
+
+    IEnumerator SpawnTrollAtRate(float waitTime)
+    {
+        while (true)
+        {
+            if (nm.ConnectedClients.Count >= 2)
+            {
+                yield return new WaitForSeconds(waitTime);
+                float x = Random.Range(-20.0f, 20.0f);
+                float y = Random.Range(-4.5f, 4.5f);
+                Vector3 position = new Vector3(x, y, 0.0f);
+                string name = "Troll-" + System.Guid.NewGuid().ToString();
+                RequestSpawnTrollClientRpc(position, name);
+            }
+        }
+    }
     void Start()
     {
         
@@ -156,6 +186,7 @@ public class NetSpawnerScript : NetworkBehaviour
                     StartCoroutine(SpawnBucketAtRate(Random.Range(15.0f, 20.0f)));
                     StartCoroutine(SpawnFakeDrinkAtRate(Random.Range(15.0f, 20.0f)));
                     StartCoroutine(SpawnGlassesAtRate(Random.Range(15.0f, 20.0f)));
+                    StartCoroutine(SpawnTrollAtRate(Random.Range(15.0f, 20.0f)));
                     gameStarted = true;
                 }
             }
@@ -170,6 +201,8 @@ public class NetSpawnerScript : NetworkBehaviour
     //Drink Spawning
     void SpawnDrink(Vector3 pos, string name)
     {
+        Drink drinky = new Drink(name, pos);
+        drinkList.Add(drinky);
         drinkPrefab.name = name;
         var drink = Instantiate(drinkPrefab, pos, Quaternion.identity);
     }
@@ -234,6 +267,17 @@ public class NetSpawnerScript : NetworkBehaviour
         SpawnGlasses(pos, name);
     }
 
+    void SpawnTroll(Vector3 pos, string name)
+    {
+        trollPrefab.name = name;
+        var troll = Instantiate(trollPrefab, pos, Quaternion.identity);
+    }
+
+    [ClientRpc]
+    void RequestSpawnTrollClientRpc(Vector3 pos, string name)
+    {
+        SpawnTroll(pos, name);
+    }
 
     [ServerRpc(RequireOwnership = false)]
     public void RequestSpawnFakeDrinkChildServerRpc(Vector3 pos, ServerRpcParams serverRpcParams =default)
