@@ -194,6 +194,7 @@ MonoBehaviour:
   bucketPrefab: {fileID: 1840351910564913901, guid: 20de060a513184544b2885f73d3bac59, type: 3}
   fakeDrinkPrefab: {fileID: 5297779911258328748, guid: 088b99627fe2dca42aff769595507e90, type: 3}
   fakeDrinkChildPrefab: {fileID: 3377206584976729794, guid: 40638b78d4a2fa545a843aeee007819f, type: 3}
+  glassesPrefab: {fileID: 999735168240167893, guid: 4a12800c5f41d7949b466f5601406d6e, type: 3}
   nm: {fileID: 775653831}
   gameState: {fileID: 11400000, guid: 7312e59f11a3dbd48978f4ecaab7c1ae, type: 2}
 --- !u!1 &166347237

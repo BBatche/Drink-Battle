@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
+using System.Security.Cryptography.X509Certificates;
 
 [CreateAssetMenu( fileName = "gameState", menuName = "State/NetworkGameState")]
 public class GameState : ScriptableObject
@@ -20,6 +21,9 @@ public class GameState : ScriptableObject
 
     public bool fakeDrinkActive2 = false;
 
+    public float player1cam = -21.0f;
+
+    public float player2cam = -21.0f;
 
 
 }

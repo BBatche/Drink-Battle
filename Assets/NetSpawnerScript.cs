@@ -13,6 +13,7 @@ public class NetSpawnerScript : NetworkBehaviour
     public GameObject bucketPrefab;
     public GameObject fakeDrinkPrefab;
     public GameObject fakeDrinkChildPrefab;
+    public GameObject glassesPrefab;
     public NetworkManager nm;
     public GameState gameState;
     
@@ -104,6 +105,23 @@ public class NetSpawnerScript : NetworkBehaviour
 
         }
     }
+
+    IEnumerator SpawnGlassesAtRate(float waitTime)
+    {
+        while (true)
+        {
+            if (nm.ConnectedClients.Count >= 2)
+            {
+                yield return new WaitForSeconds(waitTime);
+                float x = Random.Range(-20.0f, 20.0f);
+                float y = Random.Range(-4.5f, 4.5f);
+                Vector3 position = new Vector3(x, y, 0.0f);
+                string name = "Glasses-" + System.Guid.NewGuid().ToString();
+                RequestSpawnGlassesClientRpc(position, name);
+            }
+
+        }
+    }
     void Start()
     {
         
@@ -137,7 +155,7 @@ public class NetSpawnerScript : NetworkBehaviour
                     StartCoroutine(SpawnEpoxyAtRate(Random.Range(15.0f, 20.0f)));
                     StartCoroutine(SpawnBucketAtRate(Random.Range(15.0f, 20.0f)));
                     StartCoroutine(SpawnFakeDrinkAtRate(Random.Range(15.0f, 20.0f)));
-                    
+                    StartCoroutine(SpawnGlassesAtRate(Random.Range(15.0f, 20.0f)));
                     gameStarted = true;
                 }
             }
@@ -204,8 +222,18 @@ public class NetSpawnerScript : NetworkBehaviour
     {
         
     }
+    void SpawnGlasses(Vector3 pos, string name)
+    {
+        glassesPrefab.name = name;
+        var glasses = Instantiate(glassesPrefab, pos, Quaternion.identity);
+    }
 
-   
+    [ClientRpc]
+    void RequestSpawnGlassesClientRpc(Vector3 pos, string name)
+    {
+        SpawnGlasses(pos, name);
+    }
+
 
     [ServerRpc(RequireOwnership = false)]
     public void RequestSpawnFakeDrinkChildServerRpc(Vector3 pos, ServerRpcParams serverRpcParams =default)
