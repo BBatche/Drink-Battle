@@ -90,6 +90,8 @@ public class DrinkCollectorScript : NetworkBehaviour
 
         }
     }
+
+    /* ---------------------------------------------------------------------DRINK COLLECTION-----------------------------------------------------------------------------*/
     [ServerRpc(RequireOwnership = false)]
     private void RequestCollectDrinkServerRpc(string tag, Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
@@ -100,6 +102,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         if (drinkFound == false) 
         {
             Debug.Log("CHEATER CHEATER CHEATER CHEATER");
+            gameState.isCheating = true;
         }
         else 
         {
@@ -137,7 +140,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         this.gameState.player2Score = scoreData.player2Score;
     }
 
-
+    /* ---------------------------------------------------------------------EPOXY COLLECTION-----------------------------------------------------------------------------*/
     //contact server to validate collecting Epoxy
     [ServerRpc(RequireOwnership = false)]
     void RequestCollectEpoxyServerRpc(string tag, Vector3 pos, ServerRpcParams serverRpcParams = default)
@@ -147,6 +150,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         if (epoxyFound == false)
         {
             Debug.Log("CHEATER CHEATER CHEATER CHEATER");
+            gameState.isCheating = true;
         }
         else
         {
@@ -203,6 +207,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         
 
     }
+    /* ---------------------------------------------------------------------BUCKET COLLECTION-----------------------------------------------------------------------------*/
     [ServerRpc(RequireOwnership = false)]
     void RequestCollectBucketServerRpc(string tag, Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
@@ -210,6 +215,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         if (bucketFound == false)
         {
             Debug.Log("CHEATER CHEATER CHEATER CHEATER");
+            gameState.isCheating = true;
         }
         else
         {
@@ -269,7 +275,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         this.gameState.player2Score = scoreData.player2Score;
     }
 
-
+    /* ---------------------------------------------------------------------FAKE DRINK COLLECTION-----------------------------------------------------------------------------*/
     [ServerRpc(RequireOwnership = false)]
     void SetDecoyStatusServerRpc(string name, Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
@@ -278,6 +284,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         if (fakeDrinkFound== false)
         {
             Debug.Log("CHEATER CHEATER CHEATER CHEATER");
+            gameState.isCheating = true;
         }
         else
         {
@@ -327,7 +334,7 @@ public class DrinkCollectorScript : NetworkBehaviour
 
 
     }
-
+    /* ---------------------------------------------------------------------GLASSES COLLECTION-----------------------------------------------------------------------------*/
     [ServerRpc(RequireOwnership = false)]
     void RequestCollectGlassesServerRpc(string name, Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
@@ -336,6 +343,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         if (glassesFound == false)
         {
             Debug.Log("CHEATER CHEATER CHEATER CHEATER");
+            gameState.isCheating = true;
         }
         else
         {
@@ -392,6 +400,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         }
     }
 
+    /* ---------------------------------------------------------------------TROLL COLLECTION-----------------------------------------------------------------------------*/
     [ServerRpc(RequireOwnership = false)]
     void SetTrollStatusServerRpc(string name,Vector3 pos, ServerRpcParams serverRpcParams = default)
     {
@@ -400,6 +409,7 @@ public class DrinkCollectorScript : NetworkBehaviour
         if (trollFound == false)
         {
             Debug.Log("CHEATER CHEATER CHEATER CHEATER");
+            gameState.isCheating = true;
         }
         else
         {
@@ -459,6 +469,7 @@ public class DrinkCollectorScript : NetworkBehaviour
 
 
     }
+    /* ---------------------------------------------------------------------TRIGGER  DETECTION-----------------------------------------------------------------------------*/
     private void OnTriggerEnter2D(Collider2D collision)
         {
         if(collision.gameObject.tag == "Drink")

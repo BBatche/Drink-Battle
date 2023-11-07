@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Netcode;
 using System.Security.Cryptography.X509Certificates;
+using Unity.VisualScripting;
 
 [CreateAssetMenu( fileName = "gameState", menuName = "State/NetworkGameState")]
 public class GameState : ScriptableObject
@@ -33,6 +34,6 @@ public class GameState : ScriptableObject
 
     public bool trollingPlayer2 = false;
 
-
+    public bool isCheating = false;
 
 }
